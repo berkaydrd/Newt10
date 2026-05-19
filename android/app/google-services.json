@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "98013227012",
+    "project_id": "newtnet-58210",
+    "storage_bucket": "newtnet-58210.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:98013227012:android:980b95d304d61a025b2d51",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_newtten"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbRC_gGgYNGGlNX8C2nyqOFG3rWI5K9Fc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

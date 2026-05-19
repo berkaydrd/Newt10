@@ -1,0 +1,53 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(username) {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/usernames/$(username))
+          .data.uid == request.auth.uid;
+    }
+
+    match /usernames/{username} {
+      allow read: if request.auth != null;
+      allow write: if isOwner(username);
+
+      match /portfolio/{docId} {
+        allow read, write: if isOwner(username);
+      }
+
+      match /cash_flows/{docId} {
+        allow read, write: if isOwner(username);
+      }
+
+      match /temp_hourly_snapshots/{docId} {
+        allow read: if isOwner(username);
+        allow write: if false;
+      }
+
+      match /performance_intraday/{docId} {
+        allow read: if request.auth != null;
+        allow write: if false;
+      }
+
+      match /performance_history/{docId} {
+        allow read: if request.auth != null;
+        allow write: if false;
+      }
+
+      match /notifications/{docId} {
+        allow read, write: if isOwner(username);
+      }
+    }
+
+    match /leaderboards/{docId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /stocks/{docId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+  }
+}
