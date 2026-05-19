@@ -26,8 +26,9 @@ class CompanyLogo extends StatelessWidget {
         width: size,
         height: size,
         fit: BoxFit.cover,
-        cacheWidth: size.toInt(),
-        cacheHeight: size.toInt(),
+        filterQuality: FilterQuality.high, 
+        cacheWidth: (size * 3).toInt(),
+        cacheHeight: (size * 3).toInt(),
         loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
           if (loadingProgress == null) {
             return child;
