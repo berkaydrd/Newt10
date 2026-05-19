@@ -128,7 +128,7 @@ class _ProfilePageState extends State<ProfilePage> {
       body: _selectedIndex == 1
           ? const ExploreView()
           : _selectedIndex == 3
-              ? const ChatView()
+              ? ChatView(username: _username)
               : _buildProfileContent(),
       bottomNavigationBar: _buildBottomNavBar(),
     );
