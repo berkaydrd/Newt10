@@ -5,6 +5,7 @@ import 'package:flutter_application_newtten/utilities/firestore_service.dart';
 import 'package:flutter_application_newtten/views/notifications_view.dart';
 import 'package:flutter_application_newtten/views/edit_portfolio_view.dart';
 import 'package:flutter_application_newtten/views/explore_view.dart';
+import 'package:flutter_application_newtten/views/chat_view.dart';
 // Yeni Widget'ı eklemeyi unutma
 import 'package:flutter_application_newtten/widgets/profile_header_widget.dart';
 import 'package:flutter_application_newtten/widgets/portfolio_list_widget.dart';
@@ -123,8 +124,12 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _selectedIndex == 1 ? null : _buildAppBar(),
-      body: _selectedIndex == 1 ? const ExploreView() : _buildProfileContent(),
+      appBar: (_selectedIndex == 1 || _selectedIndex == 3) ? null : _buildAppBar(),
+      body: _selectedIndex == 1
+          ? const ExploreView()
+          : _selectedIndex == 3
+              ? const ChatView()
+              : _buildProfileContent(),
       bottomNavigationBar: _buildBottomNavBar(),
     );
   }
@@ -169,13 +174,12 @@ class _ProfilePageState extends State<ProfilePage> {
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.grey,
         onTap: (index) {
-          if(index == 2) {
-             // Grafik butonu mantığı
-             if (_selectedIndex == 1) {
-                setState(() { _selectedIndex = 0; _showPieChart = !_showPieChart; });
-             } else {
-                setState(() => _showPieChart = !_showPieChart);
-             }
+          if (index == 2) {
+            if (_selectedIndex == 1) {
+              setState(() { _selectedIndex = 0; _showPieChart = !_showPieChart; });
+            } else {
+              setState(() => _showPieChart = !_showPieChart);
+            }
           } else {
             setState(() => _selectedIndex = index);
           }
@@ -184,6 +188,7 @@ class _ProfilePageState extends State<ProfilePage> {
           const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home', backgroundColor: Colors.black),
           const BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Keşfet'),
           BottomNavigationBarItem(icon: Icon(_showPieChart ? Icons.line_axis : Icons.pie_chart), label: 'Grafik'),
+          const BottomNavigationBarItem(icon: Icon(Icons.smart_toy_outlined), label: 'AI'),
         ],
       ),
     );
