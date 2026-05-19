@@ -21,7 +21,7 @@ dependencies:
 
   fl_chart: ^0.66.0
   image_picker: ^1.2.1
-  firebase_storage: ^13.0.6
+  firebase_storage: ^13.4.1
   cached_network_image: ^3.4.1
 
   http: ^1.1.0
