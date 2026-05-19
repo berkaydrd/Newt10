@@ -11,12 +11,12 @@ export function toSymbol(value: unknown): string | null {
 }
 
 /**
- * Resolves the Yahoo symbol for event checks.
+ * Resolves the Yahoo symbol for price checks.
  *
  * @param {Record<string, unknown>} data Portfolio item.
  * @return {string | null} Yahoo symbol.
  */
-export function resolveEventSymbol(
+export function resolvePriceSymbol(
   data: Record<string, unknown>
 ): string | null {
   const symbol = toSymbol(data["symbol"]);
@@ -27,4 +27,16 @@ export function resolveEventSymbol(
   if (upper.endsWith(".IS")) return upper;
   if (currency === "TRY") return `${upper}.IS`;
   return upper;
+}
+
+/**
+ * Resolves the Yahoo symbol for event checks.
+ *
+ * @param {Record<string, unknown>} data Portfolio item.
+ * @return {string | null} Yahoo symbol.
+ */
+export function resolveEventSymbol(
+  data: Record<string, unknown>
+): string | null {
+  return resolvePriceSymbol(data);
 }

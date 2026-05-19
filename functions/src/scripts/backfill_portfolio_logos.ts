@@ -1,5 +1,11 @@
 import {admin, db} from "../app/firebase";
 
+/**
+ * Builds candidate stock document ids from a symbol.
+ *
+ * @param {string} symbol Portfolio symbol.
+ * @return {string[]} Candidate stock ids.
+ */
 function candidateStockIds(symbol: string): string[] {
   const trimmed = symbol.trim().toUpperCase();
   const ids: string[] = [];
@@ -25,6 +31,11 @@ function candidateStockIds(symbol: string): string[] {
   return ids;
 }
 
+/**
+ * Backfills missing portfolio logo URLs from stocks collection.
+ *
+ * @return {Promise<void>} Promise resolved when backfill finishes.
+ */
 async function backfillPortfolioLogos(): Promise<void> {
   const usersSnap = await db.collection("usernames").get();
 
@@ -51,7 +62,10 @@ async function backfillPortfolioLogos(): Promise<void> {
       const data = portfolioDoc.data() as Record<string, unknown>;
       processedCount += 1;
       const existingLogo = data["logo_url"];
-      if (typeof existingLogo === "string" && existingLogo.trim().length > 0) {
+      if (
+        typeof existingLogo === "string" &&
+        existingLogo.trim().length > 0
+      ) {
         skippedCount += 1;
         continue;
       }
@@ -73,7 +87,10 @@ async function backfillPortfolioLogos(): Promise<void> {
         const stockData =
           stockDoc.data() as Record<string, unknown> | undefined;
         const candidateUrl = stockData?.["logo_url"];
-        if (typeof candidateUrl === "string" && candidateUrl.trim().length > 0) {
+        if (
+          typeof candidateUrl === "string" &&
+          candidateUrl.trim().length > 0
+        ) {
           logoUrl = candidateUrl.trim();
           break;
         }

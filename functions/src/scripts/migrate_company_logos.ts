@@ -5,6 +5,11 @@ const PREFIX = "company_logos/";
 const EXT = ".png";
 const DEFAULT_BUCKET = "newtnet-58210.firebasestorage.app";
 
+/**
+ * Resolves the storage bucket name from env with fallback.
+ *
+ * @return {string} Bucket name.
+ */
 function resolveBucketName(): string {
   const envBucket =
     process.env.FIREBASE_STORAGE_BUCKET ??
@@ -16,6 +21,12 @@ function resolveBucketName(): string {
   return DEFAULT_BUCKET;
 }
 
+/**
+ * Extracts a stock symbol from logo file path.
+ *
+ * @param {string} filePath File path in bucket.
+ * @return {string | null} Normalized symbol or null.
+ */
 function normalizeSymbolFromPath(filePath: string): string | null {
   const fileName = filePath.split("/").pop();
   if (!fileName) return null;
@@ -25,6 +36,14 @@ function normalizeSymbolFromPath(filePath: string): string | null {
   return base.toUpperCase();
 }
 
+/**
+ * Builds a public download URL for a storage object.
+ *
+ * @param {string} bucketName Storage bucket name.
+ * @param {string} filePath File path in bucket.
+ * @param {string} token Download token.
+ * @return {string} Download URL.
+ */
 function buildDownloadUrl(
   bucketName: string,
   filePath: string,
@@ -37,13 +56,27 @@ function buildDownloadUrl(
   );
 }
 
-async function ensureDownloadToken(file: any): Promise<string> {
-  const [metadata] = await file.getMetadata();
-  const rawToken = metadata?.metadata?.firebaseStorageDownloadTokens;
-  const existingToken =
-    typeof rawToken === "string" && rawToken.trim().length > 0
-      ? rawToken.split(",")[0].trim()
-      : null;
+/**
+ * Ensures a Firebase Storage download token exists for a file.
+ *
+ * @param {unknown} file Storage file object.
+ * @return {Promise<string>} Existing or newly-created token.
+ */
+async function ensureDownloadToken(file: unknown): Promise<string> {
+  const storageFile = file as {
+    getMetadata: () => Promise<[Record<string, unknown>, ...unknown[]]>;
+    setMetadata: (
+      metadata: {metadata: Record<string, string>}
+    ) => Promise<unknown>;
+  };
+
+  const [metadata] = await storageFile.getMetadata();
+  const userMeta = metadata["metadata"] as Record<string, unknown> | undefined;
+  const rawToken = userMeta?.["firebaseStorageDownloadTokens"];
+  let existingToken: string | null = null;
+  if (typeof rawToken === "string" && rawToken.trim().length > 0) {
+    existingToken = rawToken.split(",")[0].trim();
+  }
 
   if (existingToken) return existingToken;
 
@@ -51,7 +84,7 @@ async function ensureDownloadToken(file: any): Promise<string> {
   const existingMetadata =
     (metadata?.metadata as Record<string, string> | undefined) ?? {};
 
-  await file.setMetadata({
+  await storageFile.setMetadata({
     metadata: {
       ...existingMetadata,
       firebaseStorageDownloadTokens: newToken,
@@ -61,6 +94,11 @@ async function ensureDownloadToken(file: any): Promise<string> {
   return newToken;
 }
 
+/**
+ * Migrates company logos from storage to stocks collection.
+ *
+ * @return {Promise<void>} Promise resolved when migration finishes.
+ */
 async function migrateCompanyLogos(): Promise<void> {
   const bucketName = resolveBucketName();
   const bucket = admin.storage().bucket(bucketName);
