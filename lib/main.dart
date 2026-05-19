@@ -7,11 +7,13 @@ import 'package:flutter_application_newtten/views/login_view.dart';
 import 'package:flutter_application_newtten/views/profile_page_view.dart';
 import 'package:flutter_application_newtten/views/register_view.dart';
 import 'package:flutter_application_newtten/views/verify_email_view.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
