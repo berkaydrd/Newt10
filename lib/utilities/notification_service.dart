@@ -6,8 +6,7 @@ class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
 
-  final FlutterLocalNotificationsPlugin _plugin =
-      FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
   Future<void> init() async {
@@ -21,23 +20,16 @@ class NotificationService {
     );
 
     await _plugin.initialize(
-      settings: initSettings,
+      initSettings,
       onDidReceiveNotificationResponse: (response) {
         // Uygulama açıldığında varsayılan davranış yeterli.
       },
     );
 
-    final androidPlugin = _plugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin?.requestNotificationsPermission();
 
-    final iosPlugin =
-        _plugin
-            .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin
-            >();
+    final iosPlugin = _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
     await iosPlugin?.requestPermissions(alert: true, badge: true, sound: true);
 
     _initialized = true;
@@ -51,11 +43,10 @@ class NotificationService {
     await init();
     final formatted = _formatAmount(amount, currency);
     await _plugin.show(
-      id: _notificationId(),
-      title: 'Temettü Ödemesi Alındı: $symbol',
-      body:
-          '$formatted tutarında temettü hesabınıza işlendi. Performans grafiğiniz bu ödemeye göre otomatik olarak düzeltildi.',
-      notificationDetails: _details(),
+      _notificationId(),
+      'Temettü Ödemesi Alındı: $symbol',
+      '$formatted tutarında temettü hesabınıza işlendi. Performans grafiğiniz bu ödemeye göre otomatik olarak düzeltildi.',
+      _details(),
     );
   }
 
@@ -65,11 +56,10 @@ class NotificationService {
   }) async {
     await init();
     await _plugin.show(
-      id: _notificationId(),
-      title: 'Hisse Bölünmesi: $symbol',
-      body:
-          'Hisse oranı $ratioText olarak güncellendi. Portföyünüz otomatik düzeltildi.',
-      notificationDetails: _details(),
+      _notificationId(),
+      'Hisse Bölünmesi: $symbol',
+      'Hisse oranı $ratioText olarak güncellendi. Portföyünüz otomatik düzeltildi.',
+      _details(),
     );
   }
 

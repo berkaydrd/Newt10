@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart'; // For debugPrint
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 
@@ -25,22 +26,12 @@ class FirestoreService {
   }
 
   static Future<bool> isUsernameAvailable(String username) async {
-    for (int i = 0; i < 5; i++) {
-      try {
-        final result = await FirebaseFirestore.instance
-            .collection('usernames')
-            .doc(username.toLowerCase())
-            .get(const GetOptions(source: Source.server));
-        return !result.exists;
-      } on FirebaseException catch (e) {
-        if (e.code == 'permission-denied' && i < 4) {
-          await Future.delayed(const Duration(milliseconds: 700));
-          continue;
-        }
-        rethrow;
-      }
-    }
-    return true;
+    final result = await FirebaseFirestore.instance
+        .collection('usernames')
+        .where('username', isEqualTo: username.toLowerCase())
+        .limit(1)
+        .get();
+    return result.docs.isEmpty;
   }
 
   static Future<String?> getUsername(String uid) async {
@@ -352,22 +343,43 @@ class FirestoreService {
         });
   }
 
-  // popular_stocks/v1 → entries: [{symbol, logo_url, return_24h_pct, price, name}]
+  /// Stream of popular stocks from Firestore document `popular_stocks/v1`
+  /// Expected document structure:
+  ///   entries: List<Map> with keys: symbol (String), logo_url (String?), return_24h_pct (num)
+  ///   updated_at: Firestore Timestamp
   static Stream<List<Map<String, dynamic>>> getPopularStocksStream() {
     return FirebaseFirestore.instance
         .collection('popular_stocks')
         .doc('v1')
         .snapshots()
-        .map((doc) {
-          if (!doc.exists || doc.data() == null) return <Map<String, dynamic>>[];
-          final entries = doc.data()!['entries'];
-          if (entries is! List) return <Map<String, dynamic>>[];
-          return entries
-              .whereType<Map<String, dynamic>>()
-              .toList();
-        })
-        .handleError((error) {
-          print('[FirestoreService] getPopularStocksStream error: $error');
+        .map((snapshot) {
+          try {
+            if (!snapshot.exists) {
+              return <Map<String, dynamic>>[];
+            }
+            
+            final data = snapshot.data();
+            if (data == null || !data.containsKey('entries') || data['entries'] is! List) {
+              return <Map<String, dynamic>>[];
+            }
+            
+            final entries = data['entries'] as List<dynamic>;
+            return entries
+                .where((entry) => entry != null && entry is Map<String, dynamic>)
+                .map((entry) {
+                  final map = Map<String, dynamic>.from(entry);
+                  // Ensure required fields exist with defaults
+                  map['symbol'] = map['symbol']?.toString() ?? '';
+                  map['logo_url'] = map['logo_url']?.toString();
+                  map['return_24h_pct'] = (map['return_24h_pct'] as num?) ?? 0;
+                  return map;
+                })
+                .where((map) => (map['symbol'] as String).isNotEmpty)
+                .toList();
+          } catch (e) {
+            debugPrint('Error parsing popular stocks: $e');
+            return <Map<String, dynamic>>[];
+          }
         });
   }
 }

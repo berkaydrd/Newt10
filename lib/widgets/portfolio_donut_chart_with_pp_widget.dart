@@ -220,7 +220,7 @@ class _Badge extends StatelessWidget {
       height: size,
       padding: EdgeInsets.zero,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.transparent,
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
@@ -233,7 +233,7 @@ class _Badge extends StatelessWidget {
       child: Center(
         child: CompanyLogo(
           logoUrl: logoUrl,
-          symbol: symbol,
+          size: size,
         ),
       ),
     );

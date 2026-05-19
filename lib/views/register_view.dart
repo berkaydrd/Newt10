@@ -17,7 +17,6 @@ class  _RegisterViewState extends State<RegisterView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
   late final TextEditingController _username;
-  bool _isLoading = false;
   
   @override
   void initState() {
@@ -33,98 +32,6 @@ class  _RegisterViewState extends State<RegisterView> {
     _password.dispose();
     _username.dispose();
     super.dispose();
-  }
-
-  void _showMessage(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
-  String _authMessage(FirebaseAuthException error) {
-    switch (error.code) {
-      case 'weak-password':
-        return 'Şifre çok zayıf. En az 6 karakter kullanın.';
-      case 'email-already-in-use':
-        return 'Bu mail adresi zaten kayıtlı.';
-      case 'invalid-email':
-        return 'Mail adresi geçersiz.';
-      case 'network-request-failed':
-        return 'Ağ bağlantısı kurulamadı. İnternet bağlantınızı kontrol edin.';
-      default:
-        return 'Hesap oluşturulamadı: ${error.message ?? error.code}';
-    }
-  }
-
-  Future<void> _register() async {
-    final email = _email.text.trim();
-    final password = _password.text.trim();
-    final username = _username.text.trim();
-
-    if (username.isEmpty || email.isEmpty || password.isEmpty) {
-      _showMessage('Kullanıcı adı, mail ve şifre alanlarını doldurun.');
-      return;
-    }
-
-    setState(() => _isLoading = true);
-    UserCredential? userCredential;
-    try {
-      userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
-      final uid = userCredential.user!.uid;
-      await userCredential.user?.getIdToken(true);
-
-      bool isAvailable;
-      try {
-        isAvailable = await FirestoreService.isUsernameAvailable(username);
-      } on FirebaseException catch (e) {
-        _showMessage('Adım 1 hatası [${e.plugin}/${e.code}]: ${e.message}');
-        await userCredential.user?.delete();
-        return;
-      }
-
-      if (!isAvailable) {
-        await userCredential.user?.delete();
-        _showMessage('Bu kullanıcı adı zaten alınmış.');
-        return;
-      }
-
-      try {
-        await FirebaseFirestore.instance
-            .collection('usernames')
-            .doc(username.toLowerCase())
-            .set({
-              'uid': uid,
-              'username': username.toLowerCase(),
-              'email': email,
-            });
-      } on FirebaseException catch (e) {
-        _showMessage('Adım 2 hatası [${e.plugin}/${e.code}]: ${e.message}');
-        await userCredential.user?.delete();
-        return;
-      }
-
-      await userCredential.user?.sendEmailVerification();
-
-      if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/verify_email/',
-          (route) => false,
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      _showMessage(_authMessage(e));
-    } on FirebaseException catch (e) {
-      _showMessage('Genel DB hatası [${e.plugin}/${e.code}]: ${e.message}');
-      await userCredential?.user?.delete();
-    } catch (e) {
-      _showMessage('Beklenmeyen hata: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
   }
   
   @override
@@ -255,14 +162,50 @@ class  _RegisterViewState extends State<RegisterView> {
             ),
           ),
           TextButton(
-              onPressed: _isLoading ? null : _register,
-              child: _isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Hesap Oluştur'),
+              onPressed: () async{
+      
+                final email = _email.text.trim();
+                final password = _password.text.trim();
+                final username = _username.text.trim();
+
+                final isAvailable = await FirestoreService.isUsernameAvailable(username);
+                
+                if (!isAvailable){
+                  print('Bu kullanıcı adı zaten alınmış. ');
+                  return;
+                }
+                try {
+                  // ignore: unused_local_variable
+                  final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                    email: email, 
+                    password: password
+                  );
+                  final uid = userCredential.user!.uid;
+                  await FirebaseFirestore.instance.collection('usernames').doc(username.toLowerCase()).set({
+                    'uid': uid,
+                    'username': username,
+                    'email': email,
+                  });
+                  if (mounted) {
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/verify_email/',
+                      (route) => false,
+                      );
+                  }
+                }
+                on FirebaseAuthException catch(e){
+                  if (e.code == 'weak-password'){
+                    print('Güçsüz Şifre');
+                  }
+                  else if (e.code == 'email-already-in-use'){
+                    print('Bu Mail Adresi Zaten Mevcut');
+                  }
+                  else if (e.code == 'invalid-email'){
+                    print('Mail Adresi Geçersiz');
+                  }
+                }
+              },
+              child: const Text('Sign In'),
           ),
           TextButton(//                       NewAccount
             onPressed: () {

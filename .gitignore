@@ -43,4 +43,17 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Python AI Agent Environment
+.venv/
+.tasks
 .env
+.ai_backups/
+.ai_specs
+__pycache__/
+EOT
+agents_workflow.py
+requirements.txt
+
+#service account
+/functions/service_account.json

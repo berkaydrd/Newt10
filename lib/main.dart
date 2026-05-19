@@ -1,6 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_newtten/firebase_options.dart';
@@ -9,6 +7,9 @@ import 'package:flutter_application_newtten/views/login_view.dart';
 import 'package:flutter_application_newtten/views/profile_page_view.dart';
 import 'package:flutter_application_newtten/views/register_view.dart';
 import 'package:flutter_application_newtten/views/verify_email_view.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,13 +18,27 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  FirebaseFirestore.instance.settings = const Settings(persistenceEnabled: false);
+  await initializeDateFormatting('tr_TR');
+  Intl.defaultLocale = 'tr_TR';
   await NotificationService().init();
   
   runApp(
     MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
+        scaffoldBackgroundColor: Colors.white, 
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          surface: Colors.white,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          scrolledUnderElevation: 0,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+        ),
+        
+        useMaterial3: true,
       ),
       home: const LoginView(),
       routes: {

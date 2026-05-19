@@ -43,14 +43,14 @@ class EarningsChartWidget extends StatelessWidget {
             ],
             lineTouchData: LineTouchData(
               touchTooltipData: LineTouchTooltipData(
-                //tooltipBgColor: Colors.black, //Bu niye hata vermiş anlamadım :((
+                tooltipBgColor: Colors.black,
                 getTooltipItems: (touchedSpots) => touchedSpots
                     .map(
                       (spot) => LineTooltipItem(
                         '%${spot.y.toStringAsFixed(2)}',
                         const TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold, 
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     )

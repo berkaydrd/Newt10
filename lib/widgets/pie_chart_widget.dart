@@ -185,7 +185,7 @@ class _Badge extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.transparent,
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
@@ -200,7 +200,6 @@ class _Badge extends StatelessWidget {
         child: Center(
           child: CompanyLogo(
             logoUrl: logoUrl,
-            symbol: symbol,
           ),
         ),
       ),
@@ -223,7 +222,7 @@ class _InfoBubble extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(color: Colors.black12),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 4, offset: const Offset(0, 2))

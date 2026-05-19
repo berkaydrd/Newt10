@@ -11,7 +11,6 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   late final TextEditingController _email;
   late final TextEditingController _password;
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -25,59 +24,6 @@ class _LoginViewState extends State<LoginView> {
     _email.dispose();
     _password.dispose();
     super.dispose();
-  }
-
-  void _showMessage(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
-  String _authMessage(FirebaseAuthException error) {
-    switch (error.code) {
-      case 'invalid-email':
-        return 'Mail adresi geçersiz.';
-      case 'invalid-credential':
-      case 'user-not-found':
-      case 'wrong-password':
-        return 'Mail adresi veya şifre hatalı.';
-      case 'network-request-failed':
-        return 'Ağ bağlantısı kurulamadı. İnternet bağlantınızı kontrol edin.';
-      default:
-        return 'Giriş yapılamadı: ${error.message ?? error.code}';
-    }
-  }
-
-  Future<void> _login() async {
-    final email = _email.text.trim();
-    final password = _password.text.trim();
-
-    if (email.isEmpty || password.isEmpty) {
-      _showMessage('Mail ve şifre alanlarını doldurun.');
-      return;
-    }
-
-    setState(() => _isLoading = true);
-    try {
-      final userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
-      if (!mounted) return;
-      if (userCredential.user != null) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/profile_page',
-          (route) => false,
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      _showMessage(_authMessage(e));
-    } catch (e) {
-      _showMessage('Beklenmeyen bir hata oluştu: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
   }
   
   @override
@@ -184,7 +130,32 @@ class _LoginViewState extends State<LoginView> {
               left: 0.0,
             ),
             child: TextButton(
-              onPressed: _isLoading ? null : _login,
+              
+              onPressed: () async{  
+                final email = _email.text;
+                final password = _password.text;
+                try {
+                  // ignore: unused_local_variable
+                  final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+                    email: email,
+                    password: password
+                  );
+                  if (userCredential.user != null){
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/profile_page',
+                      (route) =>false
+                    );
+                  }
+                }
+                on FirebaseAuthException catch(e){
+                  if (e.code == 'user-not-found'){
+                    print('Kullanıcı Bulunamadı');
+                  }
+                  else if (e.code == 'wrong password'){
+                    print('Parola Yanlış');
+                  }
+                }
+              },
       
               style: ButtonStyle(
                 foregroundColor: WidgetStatePropertyAll(Colors.white),
@@ -193,16 +164,7 @@ class _LoginViewState extends State<LoginView> {
                 overlayColor: WidgetStatePropertyAll(Colors.brown),
               ),
               
-              child: _isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text('Giriş Yap')
+              child: const Text('Giriş Yap')
             ),
           ),
           Padding(//                          ForgetPass

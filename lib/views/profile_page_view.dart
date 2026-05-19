@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_newtten/utilities/firestore_service.dart';
-import 'package:flutter_application_newtten/views/chat_view.dart';
 import 'package:flutter_application_newtten/views/notifications_view.dart';
 import 'package:flutter_application_newtten/views/edit_portfolio_view.dart';
 import 'package:flutter_application_newtten/views/explore_view.dart';
@@ -124,16 +123,8 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: (_selectedIndex == 1 || _selectedIndex == 3) ? null : _buildAppBar(),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: [
-          _buildProfileContent(),
-          const ExploreView(),
-          const SizedBox.shrink(),
-          ChatView(key: ValueKey(_username), username: _username),
-        ],
-      ),
+      appBar: _selectedIndex == 1 ? null : _buildAppBar(),
+      body: _selectedIndex == 1 ? const ExploreView() : _buildProfileContent(),
       bottomNavigationBar: _buildBottomNavBar(),
     );
   }
@@ -165,10 +156,7 @@ class _ProfilePageState extends State<ProfilePage> {
             style: TextStyle(fontWeight: FontWeight.bold, color: _selectedCurrency == 'TRY' ? Colors.black : Colors.green[700]),
           ),
         ),
-        IconButton(
-          onPressed: () => setState(() => _selectedIndex = 3),
-          icon: const Icon(Icons.smart_toy_outlined),
-        )
+        IconButton(onPressed: (){}, icon: const Icon(Icons.settings_suggest_outlined))
       ],
     );
   }
@@ -178,26 +166,24 @@ class _ProfilePageState extends State<ProfilePage> {
       data: Theme.of(context).copyWith(splashColor: Colors.transparent, highlightColor: Colors.grey),
       child: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.grey,
         onTap: (index) {
-          if (index == 2) {
-            if (_selectedIndex == 1) {
-              setState(() { _selectedIndex = 0; _showPieChart = !_showPieChart; });
-            } else {
-              setState(() => _showPieChart = !_showPieChart);
-            }
+          if(index == 2) {
+             // Grafik butonu mantığı
+             if (_selectedIndex == 1) {
+                setState(() { _selectedIndex = 0; _showPieChart = !_showPieChart; });
+             } else {
+                setState(() => _showPieChart = !_showPieChart);
+             }
           } else {
             setState(() => _selectedIndex = index);
           }
         },
         items: <BottomNavigationBarItem>[
-          const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home', backgroundColor: Colors.black),
           const BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Keşfet'),
           BottomNavigationBarItem(icon: Icon(_showPieChart ? Icons.line_axis : Icons.pie_chart), label: 'Grafik'),
-          const BottomNavigationBarItem(icon: Icon(Icons.smart_toy_outlined), label: 'Asistan'),
         ],
       ),
     );

@@ -1,56 +1,79 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class CompanyLogo extends StatelessWidget {
-  static const double _size = 40;
-
   final String? logoUrl;
-  final String symbol;
+  final double size;
+  final String? fallbackAssetPath;
 
   const CompanyLogo({
-    super.key,
     required this.logoUrl,
-    required this.symbol,
+    this.size = 32.0,
+    this.fallbackAssetPath,
+    super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    final trimmedSymbol = symbol.trim();
-    final fallbackChar =
-        trimmedSymbol.isNotEmpty ? trimmedSymbol[0].toUpperCase() : "?";
-    final safeUrl = logoUrl?.trim();
+    // URL null veya boşsa hemen yedek (yuvarlak) ikonu göster
+    if (logoUrl == null || logoUrl!.isEmpty) {
+      return _buildFallbackIcon();
+    }
 
-    return SizedBox.square(
-      dimension: _size,
-      child: ClipOval(
-        child: (safeUrl == null || safeUrl.isEmpty)
-            ? _buildFallback(fallbackChar)
-            : CachedNetworkImage(
-                imageUrl: safeUrl,
-                fit: BoxFit.contain,
-                cacheKey: safeUrl,
-                placeholder: (context, url) => _buildPlaceholder(),
-                errorWidget: (context, url, error) =>
-                    _buildFallback(fallbackChar),
+    // Ağı (Network) resmini ClipOval ile tam yuvarlak çiziyoruz
+    return ClipOval(
+      child: Image.network(
+        logoUrl!,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        filterQuality: FilterQuality.high, 
+        cacheWidth: (size * 3).toInt(),
+        cacheHeight: (size * 3).toInt(),
+        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+          if (loadingProgress == null) {
+            return child;
+          }
+          return Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                  : null,
+            ),
+          );
+        },
+        errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+          if (fallbackAssetPath != null && fallbackAssetPath!.isNotEmpty) {
+            return ClipOval(
+              child: Image.asset(
+                fallbackAssetPath!,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
+                  return _buildFallbackIcon();
+                },
               ),
+            );
+          }
+          return _buildFallbackIcon();
+        },
       ),
     );
   }
 
-  Widget _buildPlaceholder() {
-    return const CircleAvatar(
-      backgroundColor: Color(0xFFE0E0E0),
-    );
-  }
-
-  Widget _buildFallback(String initial) {
-    return CircleAvatar(
-      backgroundColor: const Color(0xFFE0E0E0),
-      child: Text(
-        initial,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Colors.black54,
+  Widget _buildFallbackIcon() {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        shape: BoxShape.circle, // <-- Köşeli borderRadius yerine tam yuvarlak şekil
+      ),
+      child: Center(
+        child: Icon(
+          Icons.business,
+          size: size * 0.5, // İkon boyutunu widget'a göre orantılı yaptık
+          color: Colors.grey,
         ),
       ),
     );
