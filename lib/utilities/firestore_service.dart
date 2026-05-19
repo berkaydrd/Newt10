@@ -351,4 +351,23 @@ class FirestoreService {
           }).toList();
         });
   }
+
+  // popular_stocks/v1 → entries: [{symbol, logo_url, return_24h_pct, price, name}]
+  static Stream<List<Map<String, dynamic>>> getPopularStocksStream() {
+    return FirebaseFirestore.instance
+        .collection('popular_stocks')
+        .doc('v1')
+        .snapshots()
+        .map((doc) {
+          if (!doc.exists || doc.data() == null) return <Map<String, dynamic>>[];
+          final entries = doc.data()!['entries'];
+          if (entries is! List) return <Map<String, dynamic>>[];
+          return entries
+              .whereType<Map<String, dynamic>>()
+              .toList();
+        })
+        .handleError((error) {
+          print('[FirestoreService] getPopularStocksStream error: $error');
+        });
+  }
 }

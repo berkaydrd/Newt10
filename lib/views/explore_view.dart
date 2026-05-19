@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_application_newtten/views/other_user_profile_view.dart'; // Firestore için gerekli
 import 'package:flutter_application_newtten/widgets/leaderboard_frame.dart';
+import 'package:flutter_application_newtten/widgets/popular_stocks_ticker_frame.dart';
 
 class ExploreView extends StatefulWidget {
   const ExploreView({super.key});
@@ -148,6 +149,8 @@ class _ExploreViewState extends State<ExploreView> with AutomaticKeepAliveClient
                 child: Column(
                   children: const [
                     LeaderboardFrame(),
+                    SizedBox(height: 16),
+                    PopularStocksTickerFrame(),
                   ],
                 ),
               ),
